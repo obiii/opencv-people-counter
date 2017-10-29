@@ -181,7 +181,8 @@ def checkPosition(boundaryPt1, boundaryPt2, currPos, inCriterion):
 srcTest = ''
 srcWebcam = 0
 srcMain = '' # live source here
-outputFile ='default.avi'
+# if args.output:
+#     outputFile ='default.avi'
 if args.webcam==True:
     srcMain = srcWebcam
 else:
@@ -189,6 +190,7 @@ else:
     srcMain=srcTest
 
 cap = cv2.VideoCapture(srcMain)  # Open video source
+
 if args.saveOutput==True:
 	outputFile = args.output
 #configurationd for sizes
@@ -262,10 +264,11 @@ while (cap.isOpened()):
     ret, frame = cap.read()  # read a frame
     frameForView = frame.copy()
 
-    if videoWriter is None:
-        frameW = int(cap.get(3))
-        frameH = int(cap.get(4))
-        videoWriter = cv2.VideoWriter('outpy.avi',cv2.VideoWriter_fourcc('M','J','P','G'), 10, (frameW,frameH))
+    if args.saveOutput==True:
+        if videoWriter is None:
+            frameW = int(cap.get(3))
+            frameH = int(cap.get(4))
+            videoWriter = cv2.VideoWriter(outputFile,cv2.VideoWriter_fourcc('M','J','P','G'), 10, (frameW,frameH))
 
     # Clean Frame
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -350,9 +353,7 @@ while (cap.isOpened()):
 
                             if args.generateLog==True:
                                 logger.info('Person In Detected')
-                            else:
-                                logger.info('Cant go in If statement')
-
+                            
                             if not allowPassage:
                                 peopleViolationIn += 1
                                 if args.generateLog==True:
@@ -429,7 +430,9 @@ while (cap.isOpened()):
 
         # Display
         cv2.imshow('FrameForView', frameForView)
-        videoWriter.write(frameForView)
+
+        if args.saveOutput==True:
+            videoWriter.write(frameForView)
 
 
 
