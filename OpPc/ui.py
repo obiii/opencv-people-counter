@@ -27,9 +27,12 @@ chk = IntVar()
 Checkbutton(root, text="Generate Log",padx=20, variable=chk).pack(anchor=W)
 
 #Save video Check
-Label(root,text="Save Video",padx = 20).pack(anchor=W)
 sv = IntVar()
 Checkbutton(root, text="Save Video",padx=20, variable=sv).pack(anchor=W)
+
+#make graph
+gg = IntVar()
+Checkbutton(root, text="Generate Graph",padx=20, variable=gg).pack(anchor=W)
 
 def retrieve_input():
     inputValue=textBox.get("1.0","end-1c")
@@ -41,6 +44,13 @@ textBox.pack(anchor=W)
 # Button
 def detect():
     srcVidPath ="None"
+    ggraph = 0
+
+    if gg.get():
+        ggraph =1
+    else:
+        ggraph=0
+
     if sv.get():
         savVid=1
     else:
@@ -75,6 +85,9 @@ def detect():
     if savVid==1:
         outputFile = retrieve_input()
         command += " --saveOutput --output "+outputFile+".avi "
+
+    if ggraph ==1:
+        command += "--makeGraph "
 
     if sourceVid==1 and sourceCam==0:
         command += " --video "+srcVidPath+" "

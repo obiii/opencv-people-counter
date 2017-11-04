@@ -21,6 +21,7 @@ parser.add_argument("--save", help="file name to save",action="store")
 parser.add_argument("--saveOutput", help="file name to save",action="store_true")
 parser.add_argument("--output", help="output video file",action="store")
 parser.add_argument("--generateLog", help="output video file",action="store_true")
+parser.add_argument("--makeGraph", help="To generate bar graph",action="store_true")
 
 args = parser.parse_args()
 
@@ -459,62 +460,62 @@ while (cap.isOpened()):
     #     cv2.imwrite(chr(k) + ".jpg", frame)
 
 # --- GUI ---
+if args.makeGraph==True:
+    root = tk.Tk()
 
-root = tk.Tk()
+    # top frame for canvas and toolbar - which need `pack()` layout manager
+    top = tk.Frame(root)
+    top.pack()
 
-# top frame for canvas and toolbar - which need `pack()` layout manager
-top = tk.Frame(root)
-top.pack()
+    # bottom frame for other widgets - which may use other layout manager
+    bottom = tk.Frame(root)
+    bottom.pack()
 
-# bottom frame for other widgets - which may use other layout manager
-bottom = tk.Frame(root)
-bottom.pack()
+    # --- canvas and toolbar in top ---
 
-# --- canvas and toolbar in top ---
+    # create figure
+    fig = matplotlib.pyplot.Figure()
 
-# create figure
-fig = matplotlib.pyplot.Figure()
+    # create matplotlib canvas using `fig` and assign to widget `top`
+    canvas = FigureCanvasTkAgg(fig, top)
 
-# create matplotlib canvas using `fig` and assign to widget `top`
-canvas = FigureCanvasTkAgg(fig, top)
+    # get canvas as tkinter widget and put in widget `top`
+    canvas.get_tk_widget().pack()
 
-# get canvas as tkinter widget and put in widget `top`
-canvas.get_tk_widget().pack()
+    # create toolbar
+    toolbar = NavigationToolbar2TkAgg(canvas, top)
+    toolbar.update()
+    canvas._tkcanvas.pack()
 
-# create toolbar
-toolbar = NavigationToolbar2TkAgg(canvas, top)
-toolbar.update()
-canvas._tkcanvas.pack()
+    # --- plot ---
 
-# --- plot ---
+    data = {
+        'IN/OUT':['IN', 'OUT', 'V-IN','V-OUT'],
+        'Count': [peopleIn, peopleOut, peopleViolationIn, peopleViolationOut],
+    }
 
-data = {
-    'IN/OUT':['IN', 'OUT', 'V-IN','V-OUT'],
-    'Count': [peopleIn, peopleOut, peopleViolationIn, peopleViolationOut],
-}
+    df = pd.DataFrame(data)
 
-df = pd.DataFrame(data)
+    x = 'IN/OUT'
+    y = 'Count'
 
-x = 'IN/OUT'
-y = 'Count'
+    new_df = df[[x, y]].groupby(x).sum()
 
-new_df = df[[x, y]].groupby(x).sum()
+    # create first place for plot
+    ax = fig.add_subplot(111)
 
-# create first place for plot
-ax = fig.add_subplot(111)
-
-# draw on this plot
-new_df.plot(kind='bar', legend=False, ax=ax)
+    # draw on this plot
+    new_df.plot(kind='bar', legend=False, ax=ax)
 
 
-# --- other widgets in bottom ---
+    # --- other widgets in bottom ---
 
-b = tk.Button(bottom, text='Exit', command=root.destroy)
-b.pack()
+    b = tk.Button(bottom, text='Exit', command=root.destroy)
+    b.pack()
 
-# --- start ----
+    # --- start ----
 
-root.mainloop()
+    root.mainloop()
 
 cap.release()
 cv2.destroyAllWindows()
