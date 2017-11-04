@@ -6,7 +6,13 @@ import pdb
 import argparse
 import time
 import logging
-from Tkinter import *
+import matplotlib
+matplotlib.use('TkAgg') # choose backend
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
+from matplotlib.pyplot import Figure
+import Tkinter as tk
+import pandas as pd
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--video", help="path to video file",action="store")
@@ -451,15 +457,6 @@ while (cap.isOpened()):
         break
     # else:
     #     cv2.imwrite(chr(k) + ".jpg", frame)
-import matplotlib
-matplotlib.use('TkAgg') # choose backend
-
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
-from matplotlib.pyplot import Figure
-
-# --- other ---
-import Tkinter as tk
-import pandas as pd
 
 # --- GUI ---
 
