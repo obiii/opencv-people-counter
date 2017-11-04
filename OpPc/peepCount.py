@@ -6,6 +6,7 @@ import pdb
 import argparse
 import time
 import logging
+from Tkinter import *
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--video", help="path to video file",action="store")
@@ -14,6 +15,7 @@ parser.add_argument("--save", help="file name to save",action="store")
 parser.add_argument("--saveOutput", help="file name to save",action="store_true")
 parser.add_argument("--output", help="output video file",action="store")
 parser.add_argument("--generateLog", help="output video file",action="store_true")
+
 args = parser.parse_args()
 
 
@@ -251,8 +253,6 @@ if args.generateLog==True:
     logger.addHandler(hdlr)
     logger.setLevel(logging.INFO)
 
-
-
 # take first frame of the video
 _ , pFrame = cap.read()
 
@@ -262,6 +262,8 @@ while (cap.isOpened()):
     frameInfo = np.zeros((400, 500, 3), np.uint8)
     averageArea = averageSize()
     ret, frame = cap.read()  # read a frame
+    if frame is None:
+        break
     frameForView = frame.copy()
 
     if args.saveOutput==True:
@@ -353,7 +355,7 @@ while (cap.isOpened()):
 
                             if args.generateLog==True:
                                 logger.info('Person In Detected')
-                            
+
                             if not allowPassage:
                                 peopleViolationIn += 1
                                 if args.generateLog==True:
@@ -449,6 +451,73 @@ while (cap.isOpened()):
         break
     # else:
     #     cv2.imwrite(chr(k) + ".jpg", frame)
+import matplotlib
+matplotlib.use('TkAgg') # choose backend
+
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
+from matplotlib.pyplot import Figure
+
+# --- other ---
+import Tkinter as tk
+import pandas as pd
+
+# --- GUI ---
+
+root = tk.Tk()
+
+# top frame for canvas and toolbar - which need `pack()` layout manager
+top = tk.Frame(root)
+top.pack()
+
+# bottom frame for other widgets - which may use other layout manager
+bottom = tk.Frame(root)
+bottom.pack()
+
+# --- canvas and toolbar in top ---
+
+# create figure
+fig = matplotlib.pyplot.Figure()
+
+# create matplotlib canvas using `fig` and assign to widget `top`
+canvas = FigureCanvasTkAgg(fig, top)
+
+# get canvas as tkinter widget and put in widget `top`
+canvas.get_tk_widget().pack()
+
+# create toolbar
+toolbar = NavigationToolbar2TkAgg(canvas, top)
+toolbar.update()
+canvas._tkcanvas.pack()
+
+# --- plot ---
+
+data = {
+    'IN/OUT':['IN', 'OUT', 'V-IN','V-OUT'],
+    'Count': [peopleIn, peopleOut, peopleViolationIn, peopleViolationOut],
+}
+
+df = pd.DataFrame(data)
+
+x = 'IN/OUT'
+y = 'Count'
+
+new_df = df[[x, y]].groupby(x).sum()
+
+# create first place for plot
+ax = fig.add_subplot(111)
+
+# draw on this plot
+new_df.plot(kind='bar', legend=False, ax=ax)
+
+
+# --- other widgets in bottom ---
+
+b = tk.Button(bottom, text='Exit', command=root.destroy)
+b.pack()
+
+# --- start ----
+
+root.mainloop()
 
 cap.release()
 cv2.destroyAllWindows()
