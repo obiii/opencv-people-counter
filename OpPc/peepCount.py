@@ -22,6 +22,9 @@ parser.add_argument("--saveOutput", help="file name to save",action="store_true"
 parser.add_argument("--output", help="output video file",action="store")
 parser.add_argument("--generateLog", help="output video file",action="store_true")
 parser.add_argument("--makeGraph", help="To generate bar graph",action="store_true")
+parser.add_argument("--useip", help="To connect to ip cam",action="store_true")
+parser.add_argument("--ip", help="ip of cam",action="store")
+
 
 args = parser.parse_args()
 
@@ -197,6 +200,13 @@ if args.webcam==True:
 else:
     srcTest = args.video
     srcMain=srcTest
+
+if args.useip == True:
+    if args.ip:
+        srcMain=args.ip
+    else:
+        print "Please provide ip"
+
 
 cap = cv2.VideoCapture(srcMain)  # Open video source
 

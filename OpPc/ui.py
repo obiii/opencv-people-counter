@@ -15,6 +15,12 @@ Label(root,text="Choose Video Source",padx = 20).pack(anchor=W)
 v = IntVar()
 Radiobutton(root,text="Video File",padx = 20,variable=v,value=1).pack(anchor=W)
 Radiobutton(root,text="Webcam",padx = 20,variable=v,value=2).pack(anchor=W)
+Radiobutton(root,text="IpCam",padx = 20,variable=v,value=3).pack(anchor=W)
+iptextBox=Text(root,padx=20, height=1, width=20)
+iptextBox.pack(anchor=W)
+def retrieve_ip():
+    ip=iptextBox.get("1.0","end-1c")
+    return ip
 
 # Draw separator
 w = Canvas(root, width=400, height=10)
@@ -45,6 +51,11 @@ textBox.pack(anchor=W)
 def detect():
     srcVidPath ="None"
     ggraph = 0
+    sourceIp=0
+    sourceVid=0
+    sourceCam =0
+
+
 
     if gg.get():
         ggraph =1
@@ -64,14 +75,20 @@ def detect():
     if v.get() ==1:
         sourceVid = 1
         sourceCam=0
+        sourceIp=0
 
         Tk().withdraw() # we don't want a full GUI, so keep the root window from appearing
         srcVidPath = askopenfilename() # show an "Open" dialog box and return the path to the selected file
         print(srcVidPath)
 
-    elif v.get() ==2:
+    elif v.get() == 2:
         sourceVid = 0
         sourceCam=1
+        sourceIp=0
+    elif v.get() == 3:
+        sourceVid =0
+        sourceCam=0
+        sourceIp =1
 
     print "file = "+srcVidPath
 
@@ -89,13 +106,20 @@ def detect():
     if ggraph ==1:
         command += "--makeGraph "
 
-    if sourceVid==1 and sourceCam==0:
+    if sourceVid==1 and (sourceCam==0 and sourceIp==0):
         command += " --video "+srcVidPath+" "
 
-    elif sourceVid==0 and sourceCam==1:
+    elif (sourceIp ==0 and sourceVid==0) and sourceCam==1:
         command += " --webcam "
+    elif (sourceVid==0 and sourceCam==0) and sourceIp==1:
+        ip = "http://"+retrieve_ip()+":8080/video"
+        command += " --useip --ip "+ip+" "
 
-        print command
+    elif sourceVid ==0 and sourceIp==0 and sourceCam==0:
+        print "Atleast select one video source"
+        command = None
+
+    print command
 
 
 b = Button(root, text="Configure", padx=20, command=detect)
@@ -104,7 +128,10 @@ b.pack()
 def g():
     print command
 
-    os.system(command)
+    if command is None:
+        print "Something went wrong"
+    else:
+        os.system(command)
 
 b2 = Button(root, text="Go!", padx=20, command=g)
 b2.pack()
